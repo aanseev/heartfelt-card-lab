@@ -16,6 +16,7 @@ export type Database = {
           code: string
           created_at: string | null
           id: string
+          is_public: boolean | null
           message: string | null
           reactions: Json | null
           sender_name: string | null
@@ -27,6 +28,7 @@ export type Database = {
           code: string
           created_at?: string | null
           id?: string
+          is_public?: boolean | null
           message?: string | null
           reactions?: Json | null
           sender_name?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           code?: string
           created_at?: string | null
           id?: string
+          is_public?: boolean | null
           message?: string | null
           reactions?: Json | null
           sender_name?: string | null

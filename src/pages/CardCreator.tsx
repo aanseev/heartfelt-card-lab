@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { generateCardCode } from "@/lib/utils/cardCode";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const CardCreator = () => {
   const navigate = useNavigate();
@@ -17,7 +19,8 @@ const CardCreator = () => {
   const [formData, setFormData] = useState({
     senderName: "",
     message: "",
-    backgroundColor: "#FFE6E6", // Default soft pink
+    backgroundColor: "#FFE6E6",
+    isPublic: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,6 +34,7 @@ const CardCreator = () => {
         sender_name: formData.senderName,
         message: formData.message,
         background_color: formData.backgroundColor,
+        is_public: formData.isPublic,
       });
 
       if (error) throw error;
@@ -106,6 +110,15 @@ const CardCreator = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, backgroundColor: e.target.value }))}
                 className="h-10 w-20"
               />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="public-mode"
+                checked={formData.isPublic}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublic: checked }))}
+              />
+              <Label htmlFor="public-mode">Make this card public</Label>
             </div>
 
             <Button 
