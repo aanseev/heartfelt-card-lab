@@ -6,6 +6,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import { Database } from "@/integrations/supabase/types";
+
+type ValentineCard = Database['public']['Tables']['valentine_cards']['Row'];
 
 const CardViewer = () => {
   const navigate = useNavigate();
@@ -22,16 +25,22 @@ const CardViewer = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as ValentineCard;
     },
   });
 
   const addReactionMutation = useMutation({
     mutationFn: async () => {
+      if (!card?.reactions || typeof card.reactions !== 'object') {
+        throw new Error('Invalid reactions data');
+      }
+      
+      const currentHearts = (card.reactions as { hearts: number }).hearts || 0;
+      
       const { data, error } = await supabase
         .from('valentine_cards')
         .update({
-          reactions: { hearts: ((card?.reactions?.hearts || 0) + 1) }
+          reactions: { hearts: currentHearts + 1 }
         })
         .eq('code', code)
         .select();
@@ -80,6 +89,10 @@ const CardViewer = () => {
     );
   }
 
+  const hearts = card.reactions && typeof card.reactions === 'object' 
+    ? (card.reactions as { hearts: number }).hearts || 0 
+    : 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-valentine-50 to-white p-4">
       <Button
@@ -94,7 +107,7 @@ const CardViewer = () => {
       <div className="max-w-4xl mx-auto">
         <Card 
           className="glass-card p-8 transition-all duration-500 hover:shadow-lg"
-          style={{ backgroundColor: card.background_color }}
+          style={{ backgroundColor: card.background_color ?? undefined }}
         >
           <div className="text-right mb-4">
             <Button
@@ -103,7 +116,7 @@ const CardViewer = () => {
               onClick={() => addReactionMutation.mutate()}
             >
               <Heart className="mr-2 h-4 w-4" />
-              {card.reactions?.hearts || 0}
+              {hearts}
             </Button>
           </div>
 
