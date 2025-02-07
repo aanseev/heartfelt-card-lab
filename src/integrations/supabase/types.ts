@@ -9,7 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      valentine_cards: {
+        Row: {
+          background_color: string | null
+          background_image: string | null
+          code: string
+          created_at: string | null
+          id: string
+          message: string | null
+          reactions: Json | null
+          sender_name: string | null
+          stickers: Json | null
+        }
+        Insert: {
+          background_color?: string | null
+          background_image?: string | null
+          code: string
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          reactions?: Json | null
+          sender_name?: string | null
+          stickers?: Json | null
+        }
+        Update: {
+          background_color?: string | null
+          background_image?: string | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          reactions?: Json | null
+          sender_name?: string | null
+          stickers?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
