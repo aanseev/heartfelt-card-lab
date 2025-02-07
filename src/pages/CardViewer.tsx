@@ -4,8 +4,8 @@ import { Card } from "@/components/ui/card";
 import { ArrowLeft, Heart } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useToast } from "@/components/ui/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { Database } from "@/integrations/supabase/types";
 
 type ValentineCard = Database['public']['Tables']['valentine_cards']['Row'];
@@ -14,6 +14,7 @@ const CardViewer = () => {
   const navigate = useNavigate();
   const { code } = useParams();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: card, isLoading, error } = useQuery({
     queryKey: ['card', code],
@@ -31,11 +32,11 @@ const CardViewer = () => {
 
   const addReactionMutation = useMutation({
     mutationFn: async () => {
-      if (!card?.reactions || typeof card.reactions !== 'object') {
-        throw new Error('Invalid reactions data');
-      }
+      if (!card) throw new Error('Card not found');
       
-      const currentHearts = (card.reactions as { hearts: number }).hearts || 0;
+      const currentHearts = card.reactions && typeof card.reactions === 'object' 
+        ? (card.reactions as { hearts: number }).hearts || 0 
+        : 0;
       
       const { data, error } = await supabase
         .from('valentine_cards')
@@ -43,12 +44,14 @@ const CardViewer = () => {
           reactions: { hearts: currentHearts + 1 }
         })
         .eq('code', code)
-        .select();
+        .select()
+        .single();
       
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['card', code] });
       toast({
         title: "Thanks for spreading the love! 💝",
         duration: 2000,
@@ -114,8 +117,9 @@ const CardViewer = () => {
               variant="ghost"
               className="hover:text-valentine-600"
               onClick={() => addReactionMutation.mutate()}
+              disabled={addReactionMutation.isPending}
             >
-              <Heart className="mr-2 h-4 w-4" />
+              <Heart className={`mr-2 h-4 w-4 ${addReactionMutation.isPending ? 'animate-pulse' : ''}`} />
               {hearts}
             </Button>
           </div>
